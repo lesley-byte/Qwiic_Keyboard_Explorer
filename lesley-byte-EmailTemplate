@@ -1,0 +1,178 @@
+
+/*
+  Arduino USB Keyboard with Macros
+  By: Lesley Vaden
+  If you enjoy this please buy me a coffee some day.
+  
+*/
+
+#include <Keypad_Matrix.h> //https://github.com/nickgammon/Keypad_Matrix
+#include "Keyboard.h"
+
+
+// Declare how many keys are on the keyboard
+const byte ROWS = 2;
+const byte COLS = 7;
+
+// Define how the keypad is laid out
+const char keys[ROWS][COLS] = {
+  {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07},
+  {0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E}
+};
+
+// These are the pin declarations for the Qwiic Keyboard Explorer
+const byte rowPins[ROWS] = {A0, A1}; 
+const byte colPins[COLS] = {A2, 4, 5, 6, 7, 8, 9}; 
+
+// Keep track of which mode we're currently in
+boolean kbdMode = false;
+
+// Create the Keypad object
+Keypad_Matrix kpd = Keypad_Matrix( makeKeymap (keys), rowPins, colPins, ROWS, COLS );
+
+// Key Press Handler
+void keyDown (const char which)
+  {
+  if(kbdMode){
+    switch(which){
+
+      // Here is where you define what the keys should print out for you.
+      case 0x01:
+          Keyboard.println("Dear");
+          Keyboard.println(' ');
+          Keyboard.println("Thank you for contacting LesAhab about your Pink Apple tart.");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x02:
+          Keyboard.println("Dear");
+          Keyboard.println(' ');
+          Keyboard.println("Thank you for contacting LesAhab about your Hot spicy tart.");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x03:
+          Keyboard.println("Dear");
+          Keyboard.println(' ');
+          Keyboard.println("Thank you for contacting LesAhab about your Donut chocolate tart.");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x04:
+          Keyboard.println("Dear");
+          Keyboard.println(' ');
+          Keyboard.println("Thank you for contacting LesAhab about your Upside-down tart.");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x05:
+          Keyboard.println(' ');
+          Keyboard.println("Thank you for choosing us as your bakery.  We appreciate your business. If we can be of further assistance, you can either respond to this email or call us at xxx.");
+          Keyboard.println(' ');
+          Keyboard.println("Sincerly, ");
+          Keyboard.println("Lesley Vaden");
+          Keyboard.println("Bakery Department ");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x06:
+          Keyboard.println("Please be advised that the requested change has been made effective 03/26/2021 to your bakery order and a revised invoice should reach you within 5 to 7 days in confirmation.");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x07:
+          Keyboard.println("Your inquiry is being reviewed. If additional information is needed, we will contact you.");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+  
+      case 0x08:
+          Keyboard.println("Dear");
+          Keyboard.println(' ');
+          Keyboard.println("As a follow up to your recent conversation with our Bakery Department, attached is the -insert document name- you requested ");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x09:
+          Keyboard.println(' ');
+          Keyboard.println("To update your bakery order, we need some additional information: ");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x0A:
+          Keyboard.println("Dear");
+          Keyboard.println(' ');
+          Keyboard.println("This is in reference to your pastry order.");
+          Keyboard.println(' ');
+          Keyboard.println("Please be advised that we have been unable to contact you by phone in reference to your pastry order. Please contact us at your earliest convenience. ");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x0B:
+          Keyboard.println("Reqeusted Pink Apple Tart Information");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x0C:
+          Keyboard.println("Reqeusted Hot Spicy Tart Information");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x0D:
+          Keyboard.println("Reqeusted Donut Chocolate Tart Information");
+          delay(100);
+          Keyboard.releaseAll();
+        break;
+
+      case 0x0E:
+          Keyboard.println("Reqeusted Upside-down Tart Information");
+          delay(100);
+          Keyboard.releaseAll();
+        break; 
+
+      }
+    }
+  }
+
+// Check the mode switch position and change between USB-HID mode and Serial mode
+void checkMode(){
+  if(kbdMode){
+    if(!digitalRead(A3)){
+      kbdMode = false;
+      Keyboard.end();
+      SerialUSB.println("Keyboard in USB Serial Mode");
+    }
+  }else{
+    if(digitalRead(A3)){
+      kbdMode = true;
+      SerialUSB.println("Keyboard entering HID Mode");
+      Keyboard.begin();
+    }    
+  }
+}
+
+
+void setup()
+{
+  SerialUSB.begin(115200); // baud rate for Serial mode
+  kpd.begin(); // initialise keyboard matrix
+  kpd.setKeyDownHandler(keyDown); // declare keydown function
+  pinMode(A3, INPUT_PULLUP); // initialize mode switch pin
+}
+
+void loop()
+{
+  kpd.scan(); // Get keyswitch statuses
+  checkMode(); // Check mode switch
+}
